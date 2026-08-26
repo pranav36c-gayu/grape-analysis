@@ -1,314 +1,527 @@
-import { UserButton } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  CheckCircle2,
+  Download,
+  FlaskConical,
+  Grape,
+  Info,
+  Leaf,
+  Sparkles,
+} from "lucide-react";
+import AppSidebar from "@/components/app-sidebar";
 
-export default function ResultsPage() {
+export default async function ResultsPage() {
+  const { isAuthenticated } = await auth();
+
+  if (!isAuthenticated) {
+    redirect("/sign-in");
+  }
+
+  /*
+    DEMONSTRATION RESULT DATA
+
+    These values are intentionally presented as sample/model output.
+    They should later be replaced with the real ESP32 -> ML pipeline.
+  */
+
+  const nitrogen = 78;
+  const phosphorus = 42;
+  const potassium = 81;
+
   return (
-    <main className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-[#FBFAF7] text-[#1E211F]">
+      <div className="flex min-h-screen">
+        {/* ================= SIDEBAR ================= */}
+        <AppSidebar />
 
-      {/* Header */}
-      <header className="border-b border-gray-200 bg-white">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:px-6 lg:px-8">
+        {/* ================= MAIN ================= */}
+        <section className="min-w-0 flex-1">
+          {/* Header */}
+          <header className="border-b border-[#E0E2DE] bg-[#FBFAF7]">
+            <div className="mx-auto max-w-6xl px-6 py-6 lg:px-10">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7B837E]">
+                    Analysis Report
+                  </p>
 
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">
-              Nutrient Analysis Results
-            </h1>
+                  <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
+                    Nutrient Analysis Results
+                  </h1>
 
-            <p className="mt-1 text-sm text-gray-500">
-              Grape Nutrient Analysis System
-            </p>
-          </div>
+                  <p className="mt-1 text-sm text-[#6B746E]">
+                    Grape Petiole Analysis • Sample GA-002
+                  </p>
+                </div>
 
-          <div className="shrink-0">
-            <UserButton />
-          </div>
-
-        </div>
-      </header>
-
-      {/* Main */}
-      <section className="mx-auto w-full max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-
-        {/* Back */}
-        <a
-          href="/dashboard"
-          className="text-sm font-semibold text-green-600 hover:text-green-700"
-        >
-          ← Back to Dashboard
-        </a>
-
-        {/* Title */}
-        <div className="mt-8">
-
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
-            <div>
-              <p className="text-sm font-medium text-gray-500">
-                Analysis Report
-              </p>
-
-              <h2 className="mt-1 text-3xl font-bold text-gray-900">
-                Grape Plant #002
-              </h2>
-
-              <p className="mt-2 text-sm text-gray-500">
-                Petiole spectral analysis completed successfully.
-              </p>
+                <span className="inline-flex w-fit items-center gap-2 rounded-full bg-[#EEF5F0] px-3 py-1.5 text-xs font-bold text-[#1F6B49]">
+                  <CheckCircle2 className="h-4 w-4" />
+                  Analysis Complete
+                </span>
+              </div>
             </div>
+          </header>
 
-            <span className="w-fit rounded-full bg-green-100 px-4 py-2 text-sm font-semibold text-green-700">
-              Analysis Complete
-            </span>
+          {/* ================= CONTENT ================= */}
+          <div className="mx-auto max-w-6xl px-6 py-8 lg:px-10">
+            {/* Back */}
+            <a
+              href="/dashboard"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#1F6B49] hover:text-[#18583B]"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Dashboard
+            </a>
 
-          </div>
+            {/* Sample Overview */}
+            <section className="mt-6 rounded-2xl border border-[#E0E2DE] bg-white p-6 sm:p-7">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#EEF5F0] text-[#1F6B49]">
+                    <Grape className="h-7 w-7" />
+                  </div>
 
-        </div>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#7B837E]">
+                      Sample
+                    </p>
 
-        {/* NPK Cards */}
-        <div className="mt-8 grid grid-cols-1 gap-5 md:grid-cols-3">
+                    <h2 className="mt-1 font-serif text-2xl font-bold">
+                      Grape Plant #002
+                    </h2>
 
-          {/* Nitrogen */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                    <p className="mt-1 text-sm text-[#6B746E]">
+                      Petiole sample • Spectral analysis
+                    </p>
+                  </div>
+                </div>
 
-            <div className="flex items-center justify-between">
+                <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <SampleInfo label="Sample ID" value="GA-002" />
+                  <SampleInfo label="Device" value="ESP32" />
+                  <SampleInfo label="Sensor" value="Spectral" />
+                  <SampleInfo label="Status" value="Complete" />
+                </div>
+              </div>
+            </section>
 
+            {/* ================= NPK RESULTS ================= */}
+            <section className="mt-8">
               <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Nitrogen
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1F6B49]">
+                  Nutrient Assessment
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-green-600">
-                  Optimal
-                </h3>
+                <h2 className="mt-2 font-serif text-2xl font-bold">
+                  NPK Analysis
+                </h2>
+
+                <p className="mt-2 text-sm leading-6 text-[#6B746E]">
+                  Model-based nutrient estimates generated from the petiole
+                  analysis pipeline.
+                </p>
               </div>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-700">
-                N
+              <div className="mt-5 grid gap-4 lg:grid-cols-3">
+                <NutrientCard
+                  letter="N"
+                  name="Nitrogen"
+                  value={nitrogen}
+                  status="Optimal"
+                  description="Nitrogen is currently within the preferred range."
+                  tone="green"
+                />
+
+                <NutrientCard
+                  letter="P"
+                  name="Phosphorus"
+                  value={phosphorus}
+                  status="Low"
+                  description="Phosphorus is below the preferred range and requires attention."
+                  tone="amber"
+                />
+
+                <NutrientCard
+                  letter="K"
+                  name="Potassium"
+                  value={potassium}
+                  status="Optimal"
+                  description="Potassium is currently within the preferred range."
+                  tone="green"
+                />
+              </div>
+            </section>
+
+            {/* ================= OVERALL HEALTH ================= */}
+            <section className="mt-6 grid gap-5 lg:grid-cols-[1.25fr_0.75fr]">
+              <div className="rounded-2xl border border-[#E0E2DE] bg-white p-6 sm:p-7">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7B837E]">
+                      Overall Crop Status
+                    </p>
+
+                    <h2 className="mt-2 font-serif text-2xl font-bold">
+                      Needs Attention
+                    </h2>
+
+                    <p className="mt-2 max-w-xl text-sm leading-6 text-[#6B746E]">
+                      Two nutrients are within the preferred range. Phosphorus
+                      is currently the main nutrient requiring attention.
+                    </p>
+                  </div>
+
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#FFF4E4] text-[#B77A2D]">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                </div>
+
+                <div className="mt-7 space-y-5">
+                  <NutrientBar
+                    label="Nitrogen"
+                    value={nitrogen}
+                    tone="green"
+                  />
+
+                  <NutrientBar
+                    label="Phosphorus"
+                    value={phosphorus}
+                    tone="amber"
+                  />
+
+                  <NutrientBar
+                    label="Potassium"
+                    value={potassium}
+                    tone="green"
+                  />
+                </div>
               </div>
 
-            </div>
+              <div className="rounded-2xl border border-[#E8DED0] bg-[#FCF8F2] p-6 sm:p-7">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F5EBDD] text-[#936A32]">
+                  <Leaf className="h-5 w-5" />
+                </div>
 
-            <div className="mt-6">
-              <div className="mb-2 flex justify-between text-xs text-gray-500">
-                <span>Detected Level</span>
-                <span>78%</span>
-              </div>
+                <p className="mt-5 text-xs font-semibold uppercase tracking-[0.16em] text-[#936A32]">
+                  Priority
+                </p>
 
-              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                <div className="h-full w-[78%] rounded-full bg-green-500" />
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm text-gray-500">
-              Nitrogen level is within the recommended range.
-            </p>
-
-          </div>
-
-          {/* Phosphorus */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-                <p className="text-sm font-medium text-gray-500">
+                <h3 className="mt-2 font-serif text-2xl font-bold text-[#4B4132]">
                   Phosphorus
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-[#756A5B]">
+                  Review phosphorus-related fertilizer guidance according to
+                  crop stage, soil conditions, and local agricultural practice.
                 </p>
 
-                <h3 className="mt-2 text-3xl font-bold text-yellow-600">
-                  Low
-                </h3>
+                <a
+                  href="#recommendation"
+                  className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1F6B49] px-4 py-3 text-sm font-semibold text-white hover:bg-[#18583B]"
+                >
+                  View Recommendation
+                  <ArrowLeft className="h-4 w-4 rotate-180" />
+                </a>
               </div>
+            </section>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100 text-lg font-bold text-yellow-700">
-                P
+            {/* ================= RECOMMENDATION ================= */}
+            <section
+              id="recommendation"
+              className="mt-6 rounded-2xl border border-[#D6E2D9] bg-white p-6 sm:p-7"
+            >
+              <div className="flex flex-col gap-5 md:flex-row md:items-start">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#EEF5F0] text-[#1F6B49]">
+                  <FlaskConical className="h-6 w-6" />
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1F6B49]">
+                    Fertilizer Recommendation
+                  </p>
+
+                  <h2 className="mt-2 font-serif text-2xl font-bold">
+                    Address the phosphorus deficiency
+                  </h2>
+
+                  <p className="mt-2 max-w-3xl text-sm leading-7 text-[#6B746E]">
+                    The current analysis indicates that phosphorus is below the
+                    preferred range. The recommendation engine can use this
+                    result together with crop stage, soil conditions, and
+                    configured fertilizer rules to generate a more specific
+                    recommendation.
+                  </p>
+
+                  <div className="mt-6 rounded-xl bg-[#EEF5F0] p-5">
+                    <p className="text-sm font-semibold text-[#234E38]">
+                      Recommended action
+                    </p>
+
+                    <p className="mt-2 text-sm leading-6 text-[#496155]">
+                      Consider an appropriate phosphorus-based fertilizer plan
+                      after checking crop stage, soil condition, and local
+                      agricultural guidance.
+                    </p>
+                  </div>
+
+                  <div className="mt-5 grid gap-3 sm:grid-cols-3">
+                    <RecommendationItem
+                      title="Nutrient"
+                      value="Phosphorus"
+                    />
+
+                    <RecommendationItem
+                      title="Priority"
+                      value="Attention"
+                    />
+
+                    <RecommendationItem
+                      title="Basis"
+                      value="Petiole analysis"
+                    />
+                  </div>
+                </div>
               </div>
+            </section>
 
-            </div>
+            {/* ================= AI INSIGHT ================= */}
+            <section className="mt-6 rounded-2xl border border-[#D9E3DC] bg-[#EEF5F0]/70 p-6 sm:p-7">
+              <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-[#1F6B49]">
+                    <Sparkles className="h-5 w-5" />
+                  </div>
 
-            <div className="mt-6">
-              <div className="mb-2 flex justify-between text-xs text-gray-500">
-                <span>Detected Level</span>
-                <span>42%</span>
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#1F6B49]">
+                      Grape AI
+                    </p>
+
+                    <h3 className="mt-1 font-serif text-xl font-bold">
+                      Want to understand this result?
+                    </h3>
+
+                    <p className="mt-1 text-sm leading-6 text-[#5C6B61]">
+                      Ask Grape AI to explain the nutrient result and the
+                      recommendation in farmer-friendly language.
+                    </p>
+                  </div>
+                </div>
+
+                <a
+                  href="/ai"
+                  className="inline-flex shrink-0 items-center justify-center gap-2 rounded-xl bg-[#1F6B49] px-5 py-3 text-sm font-semibold text-white hover:bg-[#18583B]"
+                >
+                  Ask Grape AI
+                  <ArrowLeft className="h-4 w-4 rotate-180" />
+                </a>
               </div>
+            </section>
 
-              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                <div className="h-full w-[42%] rounded-full bg-yellow-500" />
-              </div>
-            </div>
+            {/* ================= DISCLAIMER ================= */}
+            <section className="mt-6 rounded-xl border border-[#E0E2DE] bg-white p-5">
+              <div className="flex items-start gap-3">
+                <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#7B837E]" />
 
-            <p className="mt-4 text-sm text-gray-500">
-              Phosphorus level is below the recommended range.
-            </p>
-
-          </div>
-
-          {/* Potassium */}
-          <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
-
-            <div className="flex items-center justify-between">
-
-              <div>
-                <p className="text-sm font-medium text-gray-500">
-                  Potassium
+                <p className="text-xs leading-5 text-[#7B837E]">
+                  These results are presented as model-based estimates for the
+                  current prototype. They are not laboratory-verified nutrient
+                  measurements. Final fertilizer application should consider
+                  crop stage, soil conditions, local recommendations, and
+                  qualified agricultural guidance.
                 </p>
-
-                <h3 className="mt-2 text-3xl font-bold text-green-600">
-                  Optimal
-                </h3>
               </div>
+            </section>
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-lg font-bold text-green-700">
-                K
-              </div>
+            {/* ================= ACTIONS ================= */}
+            <section className="mt-6 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="/scan"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#1F6B49] px-5 py-3 text-sm font-semibold text-white hover:bg-[#18583B]"
+              >
+                Run Another Scan
+                <ArrowLeft className="h-4 w-4 rotate-180" />
+              </a>
 
-            </div>
+              <button
+                type="button"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#D8DDD8] bg-white px-5 py-3 text-sm font-semibold text-[#344039] hover:bg-[#F2F4F1]"
+              >
+                <Download className="h-4 w-4" />
+                Download Report
+              </button>
 
-            <div className="mt-6">
-              <div className="mb-2 flex justify-between text-xs text-gray-500">
-                <span>Detected Level</span>
-                <span>81%</span>
-              </div>
-
-              <div className="h-2 overflow-hidden rounded-full bg-gray-200">
-                <div className="h-full w-[81%] rounded-full bg-green-500" />
-              </div>
-            </div>
-
-            <p className="mt-4 text-sm text-gray-500">
-              Potassium level is within the recommended range.
-            </p>
-
+              <a
+                href="/history"
+                className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#D8DDD8] bg-white px-5 py-3 text-sm font-semibold text-[#344039] hover:bg-[#F2F4F1]"
+              >
+                View History
+              </a>
+            </section>
           </div>
-
-        </div>
-
-        {/* Recommendation */}
-        <div className="mt-8 rounded-2xl border border-yellow-200 bg-white p-6 shadow-sm sm:p-8">
-
-          <div className="flex items-start gap-4">
-
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-yellow-100 text-2xl">
-              🌱
-            </div>
-
-            <div>
-
-              <h2 className="text-xl font-bold text-gray-900">
-                Fertilizer Recommendation
-              </h2>
-
-              <p className="mt-2 text-sm leading-6 text-gray-600">
-                The analysis indicates that the phosphorus level of the
-                grape plant is below the recommended range.
-              </p>
-
-            </div>
-
-          </div>
-
-          {/* Recommendation Box */}
-          <div className="mt-6 rounded-xl bg-yellow-50 p-5">
-
-            <p className="font-semibold text-yellow-900">
-              Recommended Action
-            </p>
-
-            <p className="mt-2 text-sm leading-6 text-yellow-800">
-              Consider applying an appropriate phosphorus-based fertilizer
-              according to the crop stage, soil condition, and recommended
-              agricultural practices.
-            </p>
-
-          </div>
-
-          {/* Important Notice */}
-          <div className="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-5">
-
-            <p className="text-xs leading-5 text-gray-500">
-              This recommendation is a prototype demonstration based on
-              sample sensor data. Final fertilizer application should be
-              determined using local agricultural recommendations, soil
-              conditions, crop stage, and expert guidance.
-            </p>
-
-          </div>
-
-        </div>
-
-        {/* Analysis Information */}
-        <div className="mt-8 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-
-          <h2 className="text-xl font-bold text-gray-900">
-            Analysis Information
-          </h2>
-
-          <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-
-            <div>
-              <p className="text-xs text-gray-500">
-                Sample
-              </p>
-
-              <p className="mt-1 font-semibold text-gray-900">
-                Grape Petiole #002
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500">
-                Sensor
-              </p>
-
-              <p className="mt-1 font-semibold text-gray-900">
-                AS7265x
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500">
-                Controller
-              </p>
-
-              <p className="mt-1 font-semibold text-gray-900">
-                ESP32
-              </p>
-            </div>
-
-            <div>
-              <p className="text-xs text-gray-500">
-                Status
-              </p>
-
-              <p className="mt-1 font-semibold text-green-600">
-                Completed
-              </p>
-            </div>
-
-          </div>
-
-        </div>
-
-        {/* Actions */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-
-          <a
-            href="/analysis"
-            className="inline-flex items-center justify-center rounded-lg bg-green-600 px-6 py-3 font-semibold text-white transition hover:bg-green-700"
-          >
-            Scan Another Petiole
-          </a>
-
-          <a
-            href="/dashboard"
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
-          >
-            Back to Dashboard
-          </a>
-
-        </div>
-
-      </section>
-
+        </section>
+      </div>
     </main>
+  );
+}
+
+/* ================= SAMPLE INFO ================= */
+
+function SampleInfo({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl bg-[#F5F7F4] px-3 py-3">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-[#7B837E]">
+        {label}
+      </p>
+
+      <p className="mt-1 text-xs font-bold text-[#344039]">
+        {value}
+      </p>
+    </div>
+  );
+}
+
+/* ================= NUTRIENT CARD ================= */
+
+function NutrientCard({
+  letter,
+  name,
+  value,
+  status,
+  description,
+  tone,
+}: {
+  letter: string;
+  name: string;
+  value: number;
+  status: string;
+  description: string;
+  tone: "green" | "amber";
+}) {
+  const isGreen = tone === "green";
+
+  return (
+    <div
+      className={`rounded-2xl border bg-white p-6 ${
+        isGreen ? "border-[#D6E8DA]" : "border-[#E9D8BD]"
+      }`}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="text-sm font-semibold text-[#6B746E]">
+            {name}
+          </p>
+
+          <p
+            className={`mt-2 font-serif text-3xl font-bold ${
+              isGreen ? "text-[#1F6B49]" : "text-[#A36C26]"
+            }`}
+          >
+            {status}
+          </p>
+        </div>
+
+        <div
+          className={`flex h-12 w-12 items-center justify-center rounded-xl text-lg font-bold ${
+            isGreen
+              ? "bg-[#EEF5F0] text-[#1F6B49]"
+              : "bg-[#FFF4E4] text-[#B77A2D]"
+          }`}
+        >
+          {letter}
+        </div>
+      </div>
+
+      <div className="mt-6">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-[#7B837E]">
+            Detected Level
+          </span>
+
+          <span className="font-bold text-[#344039]">
+            {value}%
+          </span>
+        </div>
+
+        <div className="mt-2 h-2 overflow-hidden rounded-full bg-[#EEF0ED]">
+          <div
+            className={`h-full rounded-full ${
+              isGreen ? "bg-[#4F9A72]" : "bg-[#C58B3A]"
+            }`}
+            style={{ width: `${value}%` }}
+          />
+        </div>
+      </div>
+
+      <p className="mt-4 text-sm leading-6 text-[#6B746E]">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+/* ================= NUTRIENT BAR ================= */
+
+function NutrientBar({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone: "green" | "amber";
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-semibold text-[#4B554F]">
+          {label}
+        </span>
+
+        <span className="font-bold text-[#344039]">
+          {value}%
+        </span>
+      </div>
+
+      <div className="mt-2 h-3 overflow-hidden rounded-full bg-[#EEF0ED]">
+        <div
+          className={`h-full rounded-full ${
+            tone === "green" ? "bg-[#4F9A72]" : "bg-[#C58B3A]"
+          }`}
+          style={{ width: `${value}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ================= RECOMMENDATION ITEM ================= */
+
+function RecommendationItem({
+  title,
+  value,
+}: {
+  title: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl bg-white px-4 py-4">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-[#7B837E]">
+        {title}
+      </p>
+
+      <p className="mt-1 text-sm font-bold text-[#344039]">
+        {value}
+      </p>
+    </div>
   );
 }
