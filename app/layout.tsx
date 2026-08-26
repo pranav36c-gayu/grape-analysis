@@ -5,7 +5,7 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: "GrapeNPK",
   description:
-    "AI-enabled spectral analysis for grape nutrient assessment and precision fertilizer guidance.",
+    "AI-enabled grape petiole analysis and precision nutrient guidance.",
 };
 
 export default function RootLayout({
@@ -14,12 +14,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-[#FBFAF7] text-[#1E211F] antialiased">
-        <ClerkProvider>
-          {children}
-        </ClerkProvider>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en">
+        <body>{children}</body>
+      </html>
+    </ClerkProvider>
   );
 }

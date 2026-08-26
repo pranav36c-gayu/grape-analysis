@@ -1,258 +1,319 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
-import {
-  ArrowRight,
-  BarChart3,
-  CalendarDays,
-  ChevronRight,
-  FileSearch,
-  History as HistoryIcon,
-  ScanLine,
-} from "lucide-react";
-import AppSidebar from "@/components/app-sidebar";
+import Link from "next/link";
+import AppShell from "@/components/app-shell";
 
-export default async function HistoryPage() {
-  const { isAuthenticated } = await auth();
+const scans = [
+  {
+    id: "GRAPE-026",
+    date: "26 Aug 2026",
+    stage: "Flowering",
+    nitrogen: "Adequate",
+    phosphorus: "Watch",
+    potassium: "Adequate",
+    status: "Good",
+  },
+  {
+    id: "GRAPE-025",
+    date: "24 Aug 2026",
+    stage: "Flowering",
+    nitrogen: "Adequate",
+    phosphorus: "Low",
+    potassium: "Adequate",
+    status: "Attention",
+  },
+  {
+    id: "GRAPE-024",
+    date: "22 Aug 2026",
+    stage: "Vegetative",
+    nitrogen: "Adequate",
+    phosphorus: "Adequate",
+    potassium: "Adequate",
+    status: "Good",
+  },
+  {
+    id: "GRAPE-023",
+    date: "20 Aug 2026",
+    stage: "Vegetative",
+    nitrogen: "Watch",
+    phosphorus: "Adequate",
+    potassium: "Adequate",
+    status: "Attention",
+  },
+];
 
-  if (!isAuthenticated) {
-    redirect("/sign-in");
-  }
-
+export default function HistoryPage() {
   return (
-    <main className="min-h-screen bg-[#FBFAF7] text-[#1E211F]">
-      <div className="flex min-h-screen">
-        {/* ================= SIDEBAR ================= */}
-        <AppSidebar />
+    <AppShell>
 
-        {/* ================= MAIN ================= */}
-        <section className="min-w-0 flex-1">
-          {/* Header */}
-          <header className="border-b border-[#E0E2DE] bg-[#FBFAF7]">
-            <div className="mx-auto max-w-6xl px-6 py-6 lg:px-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7B837E]">
-                Past Analysis
-              </p>
+      <div className="space-y-6">
 
-              <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
-                Scan History
-              </h1>
+        <section>
+          <p className="text-sm font-semibold text-[#1F6B49]">
+            Past Field Checks
+          </p>
 
-              <p className="mt-1 text-sm text-[#6B746E]">
-                Past scans and nutrient trends.
-              </p>
-            </div>
-          </header>
+          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
+            Scan History
+          </h1>
 
-          {/* ================= CONTENT ================= */}
-          <div className="mx-auto max-w-6xl px-6 py-8 lg:px-10">
-            {/* Top summary */}
-            <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <SummaryCard
-                icon={<ScanLine className="h-5 w-5" />}
-                label="Total Scans"
-                value="0"
-              />
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+            Compare older grape samples and identify changes in nutrient
+            status over time.
+          </p>
+        </section>
 
-              <SummaryCard
-                icon={<BarChart3 className="h-5 w-5" />}
-                label="NPK Trends"
-                value="No data"
-              />
+        {/* SIMPLE TREND */}
+        <section className="rounded-2xl border border-[#E0E2DE] bg-white p-5 shadow-sm sm:p-7">
 
-              <SummaryCard
-                icon={<CalendarDays className="h-5 w-5" />}
-                label="Latest Scan"
-                value="—"
-              />
+          <div>
+            <p className="text-sm font-semibold">
+              Nutrient trend
+            </p>
 
-              <SummaryCard
-                icon={<FileSearch className="h-5 w-5" />}
-                label="Reports"
-                value="0"
-              />
-            </section>
+            <p className="mt-1 text-xs text-gray-500">
+              Example trend view for the current prototype.
+            </p>
+          </div>
 
-            {/* Empty state */}
-            <section className="mt-8 rounded-2xl border border-[#E0E2DE] bg-white">
-              <div className="px-6 py-14 text-center sm:px-10">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF5F0] text-[#1F6B49]">
-                  <HistoryIcon className="h-8 w-8" />
-                </div>
+          <div className="mt-5 grid grid-cols-3 gap-3">
 
-                <h2 className="mt-6 font-serif text-2xl font-bold">
-                  No scan history
-                </h2>
+            <TrendCard
+              label="Nitrogen"
+              value="Stable"
+              detail="No major change"
+            />
 
-                <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#6B746E]">
-                  Your previous grape petiole analyses will appear here after
-                  you complete your first scan.
-                </p>
+            <TrendCard
+              label="Phosphorus"
+              value="Watch"
+              detail="Needs review"
+              warning
+            />
 
-                <a
-                  href="/scan"
-                  className="mt-6 inline-flex items-center gap-2 rounded-xl bg-[#1F6B49] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#18583B]"
-                >
-                  <ScanLine className="h-4 w-4" />
-                  Start New Scan
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-              </div>
-            </section>
+            <TrendCard
+              label="Potassium"
+              value="Stable"
+              detail="No major change"
+            />
 
-            {/* Trends preview */}
-            <section className="mt-6 rounded-2xl border border-[#E0E2DE] bg-white p-6 sm:p-7">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#1F6B49]">
-                  Nutrient Trends
-                </p>
+          </div>
 
-                <h2 className="mt-2 font-serif text-2xl font-bold">
-                  NPK Progress Over Time
-                </h2>
+        </section>
 
-                <p className="mt-2 text-sm leading-6 text-[#6B746E]">
-                  Once scans are available, this area will show how Nitrogen,
-                  Phosphorus, and Potassium change across your vineyard scans.
-                </p>
-              </div>
+        {/* FILTERS */}
+        <div className="flex gap-2 overflow-x-auto pb-1">
 
-              <div className="mt-6 rounded-xl border border-dashed border-[#D6DDD7] bg-[#FBFAF7] p-10 text-center">
-                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-[#EEF5F0] text-[#1F6B49]">
-                  <BarChart3 className="h-6 w-6" />
-                </div>
+          <button className="shrink-0 rounded-full bg-[#1F6B49] px-4 py-2 text-xs font-semibold text-white">
+            All
+          </button>
 
-                <p className="mt-4 text-sm font-semibold text-[#344039]">
-                  Nutrient trend data will appear here
-                </p>
+          <button className="shrink-0 rounded-full border border-[#DCE2DD] bg-white px-4 py-2 text-xs font-semibold text-gray-600">
+            Good
+          </button>
 
-                <p className="mt-1 text-xs text-[#7B837E]">
-                  Complete a scan to begin tracking your crop's nutrient
-                  history.
-                </p>
-              </div>
-            </section>
+          <button className="shrink-0 rounded-full border border-[#DCE2DD] bg-white px-4 py-2 text-xs font-semibold text-gray-600">
+            Attention
+          </button>
 
-            {/* How history will work */}
-            <section className="mt-6 grid gap-4 md:grid-cols-3">
-              <HistoryStep
-                number="01"
-                title="Complete a scan"
-                text="Capture a grape petiole measurement with your connected ESP32 device."
-              />
+        </div>
 
-              <HistoryStep
-                number="02"
-                title="Save the analysis"
-                text="Your NPK result and recommendation will be added to your scan history."
-              />
+        {/* MOBILE CARDS */}
+        <section className="space-y-3 md:hidden">
 
-              <HistoryStep
-                number="03"
-                title="Track trends"
-                text="Compare future scans to understand changes in plant nutrition."
-              />
-            </section>
+          {scans.map((scan) => (
+            <div
+              key={scan.id}
+              className="rounded-2xl border border-[#E0E2DE] bg-white p-5 shadow-sm"
+            >
 
-            {/* Future history row preview */}
-            <section className="mt-6 rounded-2xl border border-[#E0E2DE] bg-white p-6 sm:p-7">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-between gap-4">
+
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7B837E]">
-                    Scan Records
+                  <p className="font-semibold">
+                    {scan.id}
                   </p>
 
-                  <h2 className="mt-2 font-serif text-xl font-bold">
-                    Previous Analyses
-                  </h2>
+                  <p className="mt-1 text-xs text-gray-500">
+                    {scan.date} • {scan.stage}
+                  </p>
                 </div>
 
-                <span className="rounded-full bg-[#EEF5F0] px-3 py-1 text-[10px] font-bold text-[#1F6B49]">
-                  0 RECORDS
-                </span>
+                <StatusBadge status={scan.status} />
+
               </div>
 
-              <div className="mt-5 rounded-xl bg-[#FBFAF7] px-5 py-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-[#7B837E]">
-                    <FileSearch className="h-5 w-5" />
-                  </div>
+              <div className="mt-5 grid grid-cols-3 gap-2">
 
-                  <div>
-                    <p className="text-sm font-semibold text-[#344039]">
-                      No completed analyses yet
-                    </p>
+                <HistoryMetric label="N" value={scan.nitrogen} />
 
-                    <p className="mt-1 text-xs text-[#7B837E]">
-                      Completed scans will be listed here with their nutrient
-                      results and recommendations.
-                    </p>
-                  </div>
-                </div>
+                <HistoryMetric label="P" value={scan.phosphorus} />
+
+                <HistoryMetric label="K" value={scan.potassium} />
+
               </div>
-            </section>
-          </div>
+
+            </div>
+          ))}
+
         </section>
+
+        {/* DESKTOP TABLE */}
+        <section className="hidden overflow-hidden rounded-2xl border border-[#E0E2DE] bg-white md:block">
+
+          <div className="overflow-x-auto">
+
+            <table className="w-full min-w-[720px] border-collapse">
+
+              <thead>
+                <tr className="border-b border-[#E0E2DE] bg-[#FBFAF7]">
+
+                  {[
+                    "Sample",
+                    "Date",
+                    "Stage",
+                    "Nitrogen",
+                    "Phosphorus",
+                    "Potassium",
+                    "Status",
+                  ].map((heading) => (
+                    <th
+                      key={heading}
+                      className="px-5 py-4 text-left text-xs font-semibold text-gray-500"
+                    >
+                      {heading}
+                    </th>
+                  ))}
+
+                </tr>
+              </thead>
+
+              <tbody>
+
+                {scans.map((scan) => (
+                  <tr
+                    key={scan.id}
+                    className="border-b border-[#E0E2DE] last:border-b-0"
+                  >
+                    <td className="px-5 py-4 text-sm font-semibold">
+                      {scan.id}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm text-gray-600">
+                      {scan.date}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm text-gray-600">
+                      {scan.stage}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm">
+                      {scan.nitrogen}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm">
+                      {scan.phosphorus}
+                    </td>
+
+                    <td className="px-5 py-4 text-sm">
+                      {scan.potassium}
+                    </td>
+
+                    <td className="px-5 py-4">
+                      <StatusBadge status={scan.status} />
+                    </td>
+                  </tr>
+                ))}
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </section>
+
+        <Link
+          href="/scan"
+          className="flex min-h-12 w-full items-center justify-center rounded-xl bg-[#1F6B49] font-semibold text-white sm:mx-auto sm:w-auto sm:px-6"
+        >
+          Start New Scan
+        </Link>
+
       </div>
-    </main>
+
+    </AppShell>
   );
 }
 
-/* ================= SUMMARY CARD ================= */
-
-function SummaryCard({
-  icon,
+function TrendCard({
   label,
   value,
+  detail,
+  warning = false,
 }: {
-  icon: React.ReactNode;
   label: string;
   value: string;
+  detail: string;
+  warning?: boolean;
 }) {
   return (
-    <div className="rounded-2xl border border-[#E0E2DE] bg-white p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEF5F0] text-[#1F6B49]">
-        {icon}
-      </div>
+    <div className="rounded-xl bg-[#FBFAF7] p-4">
 
-      <p className="mt-5 text-xs font-semibold uppercase tracking-[0.12em] text-[#7B837E]">
+      <p className="text-xs text-gray-500">
         {label}
       </p>
 
-      <p className="mt-1 text-lg font-bold text-[#1E211F]">
+      <p
+        className={`mt-2 text-sm font-semibold ${
+          warning ? "text-amber-700" : "text-[#1F6B49]"
+        }`}
+      >
         {value}
       </p>
+
+      <p className="mt-1 text-[11px] text-gray-500">
+        {detail}
+      </p>
+
     </div>
   );
 }
 
-/* ================= HISTORY STEP ================= */
-
-function HistoryStep({
-  number,
-  title,
-  text,
+function StatusBadge({
+  status,
 }: {
-  number: string;
-  title: string;
-  text: string;
+  status: string;
 }) {
   return (
-    <div className="rounded-2xl border border-[#E0E2DE] bg-white p-5">
-      <div className="flex items-center justify-between">
-        <span className="font-serif text-2xl font-bold text-[#1F6B49]/20">
-          {number}
-        </span>
+    <span
+      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${
+        status === "Good"
+          ? "bg-[#EEF5F0] text-[#1F6B49]"
+          : "bg-amber-50 text-amber-700"
+      }`}
+    >
+      {status}
+    </span>
+  );
+}
 
-        <ChevronRight className="h-4 w-4 text-[#B3BBB5]" />
-      </div>
+function HistoryMetric({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-xl bg-[#FBFAF7] p-3">
 
-      <h3 className="mt-4 font-semibold">
-        {title}
-      </h3>
-
-      <p className="mt-2 text-sm leading-6 text-[#6B746E]">
-        {text}
+      <p className="text-xs font-bold text-[#1F6B49]">
+        {label}
       </p>
+
+      <p className="mt-1 text-[11px] leading-4 text-gray-600">
+        {value}
+      </p>
+
     </div>
   );
 }

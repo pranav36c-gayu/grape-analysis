@@ -1,225 +1,233 @@
 "use client";
 
 import { useState } from "react";
-import {
-  ArrowRight,
-  Brain,
-  MessageCircle,
-  ScanLine,
-  Send,
-  Sparkles,
-  User,
-} from "lucide-react";
-import AppSidebar from "@/components/app-sidebar";
+import AppShell from "@/components/app-shell";
 
-const SUGGESTED_QUESTIONS = [
-  "Why is nitrogen low?",
-  "Explain my result.",
-  "What does this mean for my grape crop?",
-  "Compare this scan with my previous scan.",
-  "Why are you recommending this fertilizer?",
-  "Is my plant improving compared with the previous scan?",
+type Message = {
+  role: "user" | "assistant";
+  text: string;
+};
+
+const suggestions = [
+  "Why is phosphorus low?",
+  "What should I check before my next scan?",
+  "Explain my latest nutrient result.",
+  "What can cause yellowing leaves?",
 ];
 
 export default function AIPage() {
   const [message, setMessage] = useState("");
-  const [selectedQuestion, setSelectedQuestion] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleQuestionClick = (question: string) => {
-    setSelectedQuestion(question);
-    setMessage(question);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const sendMessage = async (text = message) => {
+    const clean = text.trim();
+
+    if (!clean || loading) {
+      return;
+    }
+
+    const userMessage: Message = {
+      role: "user",
+      text: clean,
+    };
+
+    setMessages((current) => [
+      ...current,
+      userMessage,
+    ]);
+
+    setMessage("");
+    setLoading(true);
+
+    try {
+      const response = await fetch("/api/ai", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: clean,
+          context: {
+            crop: "Grape",
+            growthStage: "Flowering",
+            latestScan: {
+              nitrogen: "420 ppm",
+              phosphorus: "0.18%",
+              potassium: "1240 ppm",
+            },
+          },
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "AI request failed.");
+      }
+
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          text: data.answer,
+        },
+      ]);
+
+    } catch (error) {
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          text:
+            error instanceof Error
+              ? `I could not connect to the AI service right now. ${error.message}`
+              : "I could not connect to the AI service right now.",
+        },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <main className="min-h-screen bg-[#FBFAF7] text-[#1E211F]">
-      <div className="flex min-h-screen">
-        {/* ================= SIDEBAR ================= */}
-        <AppSidebar />
+    <AppShell>
 
-        {/* ================= MAIN ================= */}
-        <section className="min-w-0 flex-1">
-          {/* Header */}
-          <header className="border-b border-[#E0E2DE] bg-[#FBFAF7]">
-            <div className="mx-auto max-w-6xl px-6 py-6 lg:px-10">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#7B837E]">
-                AI Assistant
-              </p>
+      <div className="mx-auto flex max-w-4xl flex-col">
 
-              <h1 className="mt-2 font-serif text-3xl font-bold tracking-tight">
-                Grape AI
-              </h1>
+        {/* HEADER */}
+        <section>
 
-              <p className="mt-1 text-sm text-[#6B746E]">
-                Ask about your nutrient analysis.
-              </p>
-            </div>
-          </header>
+          <p className="text-sm font-semibold text-[#1F6B49]">
+            Grape AI
+          </p>
 
-          {/* ================= CONTENT ================= */}
-          <div className="mx-auto max-w-5xl px-6 py-8 lg:px-10">
-            {/* Main AI panel */}
-            <section className="rounded-2xl border border-[#E0E2DE] bg-white">
-              {/* AI introduction */}
-              <div className="border-b border-[#E0E2DE] px-6 py-7 sm:px-8">
-                <div className="flex flex-col items-center text-center">
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF5F0] text-[#1F6B49]">
-                    <Brain className="h-8 w-8" />
-                  </div>
+          <h1 className="mt-1 text-2xl font-bold sm:text-3xl">
+            Ask about your grape crop
+          </h1>
 
-                  <div className="mt-5 inline-flex items-center gap-2 rounded-full bg-[#EEF5F0] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#1F6B49]">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    Grape AI
-                  </div>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-gray-600">
+            Ask questions about nutrient results, sampling, plant health and
+            what to check next.
+          </p>
 
-                  <h2 className="mt-4 font-serif text-2xl font-bold sm:text-3xl">
-                    Your agronomist in your pocket
-                  </h2>
-
-                  <p className="mx-auto mt-3 max-w-2xl text-sm leading-7 text-[#6B746E]">
-                    Grape AI uses your actual scan data, NPK results,
-                    recommendations, and scan history to explain your results
-                    in plain language.
-                  </p>
-                </div>
-              </div>
-
-              {/* Pre-scan state */}
-              <div className="px-6 py-8 sm:px-8">
-                <div className="rounded-2xl border border-[#E0E2DE] bg-[#FBFAF7] p-6 text-center">
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-white text-[#1F6B49]">
-                    <ScanLine className="h-6 w-6" />
-                  </div>
-
-                  <h3 className="mt-4 font-serif text-xl font-bold">
-                    Complete a scan first
-                  </h3>
-
-                  <p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-[#6B746E]">
-                    Grape AI needs an actual nutrient analysis before it can
-                    answer questions about your grape crop.
-                  </p>
-
-                  <a
-                    href="/scan"
-                    className="mt-5 inline-flex items-center gap-2 rounded-xl bg-[#1F6B49] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#18583B]"
-                  >
-                    <ScanLine className="h-4 w-4" />
-                    Start New Scan
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </div>
-
-                {/* Suggested questions */}
-                <div className="mt-8">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4 text-[#1F6B49]" />
-
-                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#7B837E]">
-                      Suggested questions
-                    </p>
-                  </div>
-
-                  <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    {SUGGESTED_QUESTIONS.map((question) => {
-                      const active = selectedQuestion === question;
-
-                      return (
-                        <button
-                          key={question}
-                          type="button"
-                          onClick={() => handleQuestionClick(question)}
-                          className={`rounded-xl border px-4 py-3 text-left text-sm transition ${
-                            active
-                              ? "border-[#1F6B49] bg-[#EEF5F0] text-[#1F6B49]"
-                              : "border-[#E0E2DE] bg-white text-[#53605A] hover:border-[#BFD4C5] hover:bg-[#F6F8F5]"
-                          }`}
-                        >
-                          {question}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Composer */}
-                <div className="mt-8">
-                  <div className="rounded-2xl border border-[#E0E2DE] bg-white p-3">
-                    <div className="flex items-end gap-3">
-                      <textarea
-                        value={message}
-                        onChange={(event) => setMessage(event.target.value)}
-                        placeholder="Ask about your analysis..."
-                        rows={3}
-                        className="min-h-[80px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-sm text-[#1E211F] outline-none placeholder:text-[#9AA29D]"
-                      />
-
-                      <button
-                        type="button"
-                        className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#1F6B49] text-white transition hover:bg-[#18583B]"
-                        aria-label="Send message"
-                      >
-                        <Send className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <p className="mt-2 text-center text-[11px] leading-5 text-[#8A938D]">
-                    Grape AI should distinguish measured sensor data from its
-                    own explanations and recommendations.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* AI capabilities */}
-            <section className="mt-6 grid gap-4 md:grid-cols-3">
-              <CapabilityCard
-                icon={<Brain className="h-5 w-5" />}
-                title="Explain results"
-                text="Understand what your NPK analysis means for the crop."
-              />
-
-              <CapabilityCard
-                icon={<Sparkles className="h-5 w-5" />}
-                title="Understand trends"
-                text="Compare current results with previous scan history."
-              />
-
-              <CapabilityCard
-                icon={<User className="h-5 w-5" />}
-                title="Farmer-friendly answers"
-                text="Ask questions naturally and receive simple explanations."
-              />
-            </section>
-          </div>
         </section>
+
+        {/* CHAT */}
+        <section className="mt-6 flex min-h-[60vh] flex-col overflow-hidden rounded-2xl border border-[#E0E2DE] bg-white shadow-sm">
+
+          <div className="flex-1 space-y-4 overflow-y-auto p-4 sm:p-6">
+
+            {messages.length === 0 && !loading && (
+              <div className="flex min-h-[45vh] flex-col items-center justify-center text-center">
+
+                <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#EEF5F0] text-2xl text-[#1F6B49]">
+                  ✦
+                </div>
+
+                <h2 className="mt-5 text-lg font-bold">
+                  How can I help?
+                </h2>
+
+                <p className="mt-2 max-w-md text-sm leading-6 text-gray-500">
+                  Ask naturally. You do not need to know technical terms.
+                </p>
+
+                <div className="mt-6 w-full max-w-lg space-y-2">
+
+                  {suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      onClick={() => sendMessage(suggestion)}
+                      className="w-full rounded-xl border border-[#DDE3DE] bg-[#FBFAF7] px-4 py-3 text-left text-sm text-gray-700 transition hover:border-[#B7C9BD]"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+
+                </div>
+
+              </div>
+            )}
+
+            {messages.map((item, index) => (
+              <div
+                key={`${item.role}-${index}`}
+                className={`flex ${
+                  item.role === "user"
+                    ? "justify-end"
+                    : "justify-start"
+                }`}
+              >
+                <div
+                  className={`max-w-[90%] rounded-2xl px-4 py-3 text-sm leading-6 sm:max-w-[78%] ${
+                    item.role === "user"
+                      ? "bg-[#1F6B49] text-white"
+                      : "bg-[#EEF5F0] text-[#244B37]"
+                  }`}
+                >
+                  {item.text}
+                </div>
+              </div>
+            ))}
+
+            {loading && (
+              <div className="flex justify-start">
+                <div className="rounded-2xl bg-[#EEF5F0] px-4 py-3 text-sm text-[#244B37]">
+                  Thinking…
+                </div>
+              </div>
+            )}
+
+          </div>
+
+          {/* COMPOSER */}
+          <div className="border-t border-[#E0E2DE] p-3 sm:p-4">
+
+            <div className="flex items-end gap-2">
+
+              <textarea
+                value={message}
+                onChange={(event) => {
+                  setMessage(event.target.value);
+                }}
+                onKeyDown={(event) => {
+                  if (
+                    event.key === "Enter" &&
+                    !event.shiftKey
+                  ) {
+                    event.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                placeholder="Ask about your grape crop..."
+                rows={1}
+                className="min-h-12 flex-1 resize-none rounded-xl border border-[#DDE3DE] bg-[#FBFAF7] px-4 py-3 text-sm outline-none focus:border-[#1F6B49]"
+              />
+
+              <button
+                onClick={() => sendMessage()}
+                disabled={loading}
+                className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#1F6B49] text-white disabled:opacity-50"
+                aria-label="Send"
+              >
+                ↑
+              </button>
+
+            </div>
+
+            <p className="mt-2 px-1 text-[10px] leading-4 text-gray-400">
+              AI guidance is decision support. It should not replace
+              laboratory testing or professional agronomy advice.
+            </p>
+
+          </div>
+
+        </section>
+
       </div>
-    </main>
-  );
-}
 
-function CapabilityCard({
-  icon,
-  title,
-  text,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  text: string;
-}) {
-  return (
-    <div className="rounded-2xl border border-[#E0E2DE] bg-white p-5">
-      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#EEF5F0] text-[#1F6B49]">
-        {icon}
-      </div>
-
-      <h3 className="mt-4 font-semibold">
-        {title}
-      </h3>
-
-      <p className="mt-2 text-sm leading-6 text-[#6B746E]">
-        {text}
-      </p>
-    </div>
+    </AppShell>
   );
 }

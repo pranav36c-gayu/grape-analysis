@@ -2,8 +2,31 @@ import { SignUp } from "@clerk/nextjs";
 
 export default function SignUpPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-50 px-6 py-12">
-      <SignUp />
+    <main className="flex min-h-screen items-center justify-center bg-[#FBFAF7] px-4 py-8">
+
+      <div className="w-full max-w-md">
+
+        <div className="mb-6 text-center">
+          <div className="text-3xl font-bold text-[#1F6B49]">
+            GrapeNPK
+          </div>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Create your farmer account
+          </p>
+        </div>
+
+        <SignUp
+          appearance={{
+            elements: {
+              rootBox: "w-full",
+              card: "shadow-sm border border-[#E0E2DE] rounded-2xl",
+            },
+          }}
+        />
+
+      </div>
+
     </main>
   );
 }

@@ -1,623 +1,518 @@
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import {
-  Grape,
-  ScanLine,
-  Cpu,
-  Brain,
-  Leaf,
-  Shield,
-  ArrowRight,
-  Activity,
-  BarChart3,
-  Wifi,
-  CheckCircle2,
-  ChevronDown,
-  Sparkles,
-  Microscope,
-  FlaskConical,
-} from "lucide-react";
+  Show,
+  SignInButton,
+  SignUpButton,
+} from "@clerk/nextjs";
 
-const HERO_IMAGE =
-  "https://images.pexels.com/photos/36189155/pexels-photo-36189155.jpeg?auto=compress&cs=tinysrgb&h=650&w=940";
-
-const GRAPE_IMAGE =
-  "https://images.pexels.com/photos/31782681/pexels-photo-31782681.jpeg?auto=compress&cs=tinysrgb&h=650&w=940";
-
-const LAB_IMAGE =
-  "https://images.pexels.com/photos/8533045/pexels-photo-8533045.jpeg?auto=compress&cs=tinysrgb&h=650&w=940";
-
-const WORKFLOW_STEPS = [
+const steps = [
   {
-    num: "01",
-    title: "Petiole",
-    desc: "Collect a grape petiole sample from your vineyard.",
-    icon: Leaf,
+    number: "01",
+    title: "Petiole Collection",
+    text: "Collect a grape petiole sample using a consistent field procedure.",
   },
   {
-    num: "02",
+    number: "02",
     title: "Spectral Sensor",
-    desc: "Place the sample in the spectral sensor attached to your ESP32.",
-    icon: Microscope,
+    text: "Place the prepared sample into the connected sensing system.",
   },
   {
-    num: "03",
+    number: "03",
     title: "ESP32 Device",
-    desc: "The ESP32 captures spectral readings across visible and near-infrared wavelengths.",
-    icon: Cpu,
+    text: "The ESP32 captures and transfers the sensor readings.",
   },
   {
-    num: "04",
-    title: "Secure Data Transfer",
-    desc: "Readings are securely transmitted to the GrapeNPK cloud platform.",
-    icon: Shield,
+    number: "04",
+    title: "Data Processing",
+    text: "The platform validates and processes the incoming measurements.",
   },
   {
-    num: "05",
-    title: "Spectral Processing",
-    desc: "Data is validated, cleaned, and features are extracted from the spectral signature.",
-    icon: Activity,
+    number: "05",
+    title: "Nutrient Prediction",
+    text: "The analysis estimates the plant's nutrient status.",
   },
   {
-    num: "06",
-    title: "NPK Prediction",
-    desc: "The prediction model estimates Nitrogen, Phosphorus, and Potassium levels.",
-    icon: BarChart3,
+    number: "06",
+    title: "AI Analysis",
+    text: "AI combines measurements and context to explain the result.",
   },
   {
-    num: "07",
-    title: "Fertilizer Recommendation",
-    desc: "Configurable rules generate targeted fertilizer guidance based on your results.",
-    icon: FlaskConical,
+    number: "07",
+    title: "Recommendation",
+    text: "The system generates practical fertilizer guidance.",
   },
   {
-    num: "08",
-    title: "AI Explanation",
-    desc: "Grape AI explains your results in plain language and answers your questions.",
-    icon: Brain,
+    number: "08",
+    title: "Farmer Action",
+    text: "The farmer receives an understandable result and next step.",
   },
 ];
 
-const FAQ_ITEMS = [
+const faqs = [
   {
-    question:
-      "Is GrapeNPK a replacement for laboratory soil or tissue testing?",
+    question: "What is GrapeNPK?",
     answer:
-      "No. GrapeNPK provides model-based estimates of nutrient levels from spectral data. It is a decision-support tool designed for rapid in-field assessment. For critical decisions, always confirm with accredited laboratory testing. The platform clearly labels results as estimates and does not claim laboratory-grade accuracy.",
+      "GrapeNPK is a prototype platform for grape petiole nutrient screening using sensors, ESP32 data, and AI-assisted analysis.",
   },
   {
-    question: "What hardware do I need to use GrapeNPK?",
+    question: "Does it replace laboratory testing?",
     answer:
-      "GrapeNPK is designed to work with an ESP32 microcontroller connected to a spectral sensor. The platform supports real device communication via secure API endpoints. During development, a built-in simulator mode generates realistic spectral data so you can test the full workflow without hardware.",
+      "No. The prototype is intended for field screening and decision support. Reliable quantitative claims require calibration and validation against laboratory reference data.",
   },
   {
-    question: "How does the AI assistant work?",
+    question: "Can farmers use it on a mobile phone?",
     answer:
-      "Grape AI uses your actual scan data, NPK results, recommendations, and scan history as context. It explains your results in farmer-friendly language and never invents sensor readings or nutrient values. The AI clearly distinguishes between measured data and its own interpretations, and includes advisory notices about its limitations.",
+      "Yes. The application is designed with a mobile-first interface so the important actions are easy to reach on a smartphone.",
   },
   {
-    question: "Can I use GrapeNPK for crops other than grapes?",
+    question: "What does the system analyze?",
     answer:
-      "The architecture is designed to support future crops. Nutrient thresholds, fertilizer catalogs, and recommendation rules are configurable per crop type. Currently, the platform is tuned for grape vineyards, but the system can be extended to tomatoes, other fruits, and additional crops.",
-  },
-  {
-    question: "How is my farm data protected?",
-    answer:
-      "GrapeNPK uses row-level security at the database level — each farmer can only access their own scans, devices, and analysis. Admins have system-wide access for monitoring and configuration. All authentication is handled securely, and device communication uses authenticated API endpoints.",
-  },
-  {
-    question: "Can the prediction model be replaced with a real trained model?",
-    answer:
-      "Yes. The prediction service is modular. The current development model is a simulation that generates plausible NPK values from spectral features. It can be replaced with a real trained ML model hosted as a Python API or any other service, without changing the application logic.",
+      "The platform is being developed around grape nutrient assessment, with N, P and K as the main project focus and room for additional supporting measurements.",
   },
 ];
 
-export default async function LandingPage() {
-  const { isAuthenticated } = await auth();
-
-  if (!isAuthenticated) {
-    redirect("/sign-in");
-  }
-
+export default function Home() {
   return (
     <main className="min-h-screen bg-[#FBFAF7] text-[#1E211F]">
-      {/* ================= NAVIGATION ================= */}
-      <nav className="fixed top-0 z-50 w-full border-b border-[#E0E2DE]/70 bg-[#FBFAF7]/90 backdrop-blur-lg">
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#1F6B49]">
-              <Grape className="h-5 w-5 text-white" />
+
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 border-b border-[#E0E2DE] bg-[#FBFAF7]/95 backdrop-blur">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:h-20 lg:px-8">
+
+          <Link href="/" className="block">
+            <div className="text-xl font-bold text-[#1F6B49] sm:text-2xl">
+              GrapeNPK
             </div>
 
-            <span className="font-serif text-xl font-bold tracking-tight">
-              GrapeNPK
-            </span>
+            <div className="hidden text-[10px] text-gray-500 sm:block">
+              Grape Nutrition Intelligence
+            </div>
           </Link>
 
-          <div className="hidden items-center gap-8 md:flex">
-            <a
-              href="#how-it-works"
-              className="text-sm font-medium text-[#66706A] transition-colors hover:text-[#1F6B49]"
-            >
+          {/* Desktop Navigation */}
+          <nav className="hidden items-center gap-7 lg:flex">
+            <a href="#how-it-works" className="text-sm text-gray-600 hover:text-[#1F6B49]">
               How It Works
             </a>
 
-            <a
-              href="#why"
-              className="text-sm font-medium text-[#66706A] transition-colors hover:text-[#1F6B49]"
-            >
+            <a href="#why" className="text-sm text-gray-600 hover:text-[#1F6B49]">
               Why GrapeNPK
             </a>
 
-            <a
-              href="#technology"
-              className="text-sm font-medium text-[#66706A] transition-colors hover:text-[#1F6B49]"
-            >
+            <a href="#technology" className="text-sm text-gray-600 hover:text-[#1F6B49]">
               Technology
             </a>
 
-            <a
-              href="#faq"
-              className="text-sm font-medium text-[#66706A] transition-colors hover:text-[#1F6B49]"
-            >
+            <a href="#faq" className="text-sm text-gray-600 hover:text-[#1F6B49]">
               FAQ
             </a>
+          </nav>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+
+            <Show when="signed-out">
+              <SignInButton mode="modal">
+                <button className="hidden rounded-lg px-3 py-2 text-sm font-medium text-gray-600 hover:text-[#1F6B49] sm:block">
+                  Sign In
+                </button>
+              </SignInButton>
+
+              <SignUpButton mode="modal">
+                <button className="rounded-lg bg-[#1F6B49] px-3 py-2 text-xs font-semibold text-white sm:px-4 sm:text-sm">
+                  Get Started
+                </button>
+              </SignUpButton>
+            </Show>
+
+            <Show when="signed-in">
+              <Link
+                href="/dashboard"
+                className="rounded-lg bg-[#1F6B49] px-3 py-2 text-xs font-semibold text-white sm:px-4 sm:text-sm"
+              >
+                Dashboard
+              </Link>
+            </Show>
+
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/sign-in"
-              className="rounded-lg px-3 py-2 text-sm font-medium text-[#4B554F] transition hover:bg-[#EEF5F0]"
-            >
-              Sign In
-            </Link>
-
-            <Link
-              href="/sign-up"
-              className="rounded-lg bg-[#1F6B49] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#18583B]"
-            >
-              Get Started
-            </Link>
-          </div>
         </div>
-      </nav>
+      </header>
 
-      {/* ================= HERO ================= */}
-      <section className="relative flex min-h-screen items-center overflow-hidden pt-16">
-        <div className="absolute inset-0">
-          <img
-            src={HERO_IMAGE}
-            alt="Vineyard at golden hour"
-            className="h-full w-full object-cover"
-          />
+      {/* HERO */}
+      <section className="px-4 pb-16 pt-10 sm:px-6 sm:pb-20 sm:pt-16 lg:px-8 lg:pt-24">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 lg:grid-cols-2">
 
-          <div className="absolute inset-0 bg-gradient-to-r from-[#FBFAF7] via-[#FBFAF7]/90 to-[#FBFAF7]/40" />
+          <div>
 
-          <div className="absolute inset-0 bg-gradient-to-t from-[#FBFAF7] via-transparent to-[#FBFAF7]/20" />
-        </div>
-
-        <div className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
-          <div className="max-w-2xl">
-            <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-[#D8DDD8] bg-[#FBFAF7]/90 px-3 py-1.5 text-xs font-medium backdrop-blur">
-              <Sparkles className="h-3 w-3 text-[#1F6B49]" />
+            <div className="inline-flex items-center rounded-full border border-[#C9D8CF] bg-[#EEF5F0] px-3 py-1.5 text-xs font-semibold text-[#1F6B49]">
               AI-Enabled Spectral Analysis
             </div>
 
-            <h1 className="font-serif text-4xl font-bold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 max-w-3xl text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
               From Petiole Scan to Smarter Grape Nutrition
             </h1>
 
-            <p className="mt-6 text-lg leading-relaxed text-[#5D6761]">
-              AI-enabled spectral analysis for grape nutrient assessment and
-              precision fertilizer guidance. Connect your ESP32 spectral sensor,
-              scan petioles, and get instant NPK estimates with actionable
+            <p className="mt-6 max-w-2xl text-base leading-7 text-gray-600 sm:text-lg">
+              A farmer-focused platform designed to connect grape petiole
+              sensing, ESP32 data, AI analysis and understandable nutrient
               recommendations.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/dashboard">
-                <span className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1F6B49] px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-[#18583B] sm:w-auto">
-                  Get Started
-                  <ArrowRight className="h-4 w-4" />
-                </span>
-              </Link>
 
-              <a href="#how-it-works">
-                <span className="flex w-full items-center justify-center rounded-xl border border-[#CCD3CD] bg-[#FBFAF7]/90 px-6 py-3.5 text-sm font-semibold text-[#344039] backdrop-blur transition hover:bg-white sm:w-auto">
-                  See How It Works
-                </span>
+              <Show when="signed-out">
+                <SignUpButton mode="modal">
+                  <button className="min-h-12 rounded-xl bg-[#1F6B49] px-6 font-semibold text-white shadow-sm">
+                    Get Started
+                  </button>
+                </SignUpButton>
+              </Show>
+
+              <Show when="signed-in">
+                <Link
+                  href="/dashboard"
+                  className="flex min-h-12 items-center justify-center rounded-xl bg-[#1F6B49] px-6 font-semibold text-white shadow-sm"
+                >
+                  Open Dashboard
+                </Link>
+              </Show>
+
+              <a
+                href="#how-it-works"
+                className="flex min-h-12 items-center justify-center rounded-xl border border-[#D8DDD8] bg-white px-6 font-semibold text-gray-700"
+              >
+                See How It Works
               </a>
+
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-6 text-sm text-[#66706A]">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#1F6B49]" />
-                Real ESP32 integration
-              </div>
-
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#1F6B49]" />
-                Modular ML architecture
-              </div>
-
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-[#1F6B49]" />
-                AI-powered explanations
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 animate-bounce">
-          <ChevronDown className="h-6 w-6 text-[#7C857F]/50" />
-        </div>
-      </section>
-
-      {/* ================= HOW IT WORKS ================= */}
-      <section id="how-it-works" className="py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="mb-4 inline-flex rounded-full border border-[#D8DDD8] px-3 py-1.5 text-xs font-semibold text-[#5B665F]">
-              How It Works
-            </span>
-
-            <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">
-              Eight steps from leaf to recommendation
-            </h2>
-
-            <p className="mt-4 text-[#6B746E]">
-              A complete pipeline from physical petiole sample to
-              AI-explained fertilizer guidance.
-            </p>
           </div>
 
-          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {WORKFLOW_STEPS.map((step, idx) => {
-              const Icon = step.icon;
+          <div className="rounded-3xl border border-[#DCE2DD] bg-white p-5 shadow-sm sm:p-7">
+            <div className="rounded-2xl bg-[#EEF5F0] p-5 sm:p-7">
 
-              return (
-                <div
-                  key={step.num}
-                  className="group relative rounded-xl border border-[#E0E2DE] bg-white p-6 transition-all hover:border-[#BFD4C5] hover:shadow-lg"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-serif text-3xl font-bold text-[#1F6B49]/20">
-                      {step.num}
-                    </span>
-
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#EEF5F0] text-[#1F6B49]">
-                      <Icon className="h-5 w-5" />
-                    </div>
-                  </div>
-
-                  <h3 className="mt-4 font-semibold">
-                    {step.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-relaxed text-[#6B746E]">
-                    {step.desc}
-                  </p>
-
-                  {idx < WORKFLOW_STEPS.length - 1 && (
-                    <div className="absolute -right-3 top-1/2 hidden -translate-y-1/2 lg:block">
-                      <ArrowRight className="h-4 w-4 text-[#D6DCD7]" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ================= WHY GRAPENPK ================= */}
-      <section id="why" className="bg-[#EEF5F0]/60 py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div>
-              <img
-                src={GRAPE_IMAGE}
-                alt="Fresh grapes on the vine"
-                className="rounded-2xl shadow-xl"
-              />
-            </div>
-
-            <div>
-              <span className="mb-4 inline-flex rounded-full border border-[#C9D5CC] px-3 py-1.5 text-xs font-semibold text-[#5B665F]">
-                Why GrapeNPK
-              </span>
-
-              <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">
-                Built for farmers, engineered for precision
-              </h2>
-
-              <p className="mt-4 leading-relaxed text-[#6B746E]">
-                GrapeNPK bridges the gap between scientific instrumentation
-                and everyday vineyard management. No technical knowledge
-                required — just connect, scan, and understand.
+              <p className="text-xs font-semibold uppercase tracking-wider text-[#1F6B49]">
+                Analysis Flow
               </p>
 
-              <div className="mt-8 space-y-4">
+              <div className="mt-6 space-y-4">
+
                 {[
-                  {
-                    icon: ScanLine,
-                    title: "Rapid in-field assessment",
-                    desc: "Get NPK estimates in minutes, not days.",
-                  },
-                  {
-                    icon: Brain,
-                    title: "AI that explains, not just reports",
-                    desc: "Grape AI translates results into plain language.",
-                  },
-                  {
-                    icon: Shield,
-                    title: "Secure and private",
-                    desc: "Your farm data is isolated and protected.",
-                  },
-                  {
-                    icon: Wifi,
-                    title: "Real device integration",
-                    desc: "Designed for real ESP32 + spectral sensor hardware.",
-                  },
-                ].map((item) => {
-                  const Icon = item.icon;
+                  "Grape Petiole",
+                  "Spectral Sensor",
+                  "ESP32",
+                  "AI Analysis",
+                  "Nutrient Result",
+                ].map((item, index) => (
+                  <div key={item}>
+                    <div className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm">
+                      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[#1F6B49] text-xs font-bold text-white">
+                        {index + 1}
+                      </span>
 
-                  return (
-                    <div
-                      key={item.title}
-                      className="flex items-start gap-4"
-                    >
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-[#EEF5F0] text-[#1F6B49]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-
-                      <div>
-                        <h3 className="font-semibold">
-                          {item.title}
-                        </h3>
-
-                        <p className="text-sm text-[#6B746E]">
-                          {item.desc}
-                        </p>
-                      </div>
+                      <span className="text-sm font-semibold">
+                        {item}
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ================= TECHNOLOGY ================= */}
-      <section id="technology" className="py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-2xl text-center">
-            <span className="mb-4 inline-flex rounded-full border border-[#D8DDD8] px-3 py-1.5 text-xs font-semibold text-[#5B665F]">
-              Technology
-            </span>
-
-            <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">
-              A modular architecture ready for production
-            </h2>
-
-            <p className="mt-4 text-[#6B746E]">
-              Every component — from sensor adapter to ML model to AI provider
-              — is designed to be replaced or upgraded without rebuilding the
-              system.
-            </p>
-          </div>
-
-          <div className="mt-16 grid gap-6 md:grid-cols-3">
-            {[
-              {
-                icon: Cpu,
-                title: "IoT Layer",
-                desc: "ESP32 communicates via secure HTTPS API with heartbeat monitoring, device authentication, and real-time status updates.",
-              },
-              {
-                icon: Activity,
-                title: "Spectral Pipeline",
-                desc: "A sensor adapter layer normalizes incoming data, followed by validation, cleaning, feature extraction, and prediction.",
-              },
-              {
-                icon: BarChart3,
-                title: "ML Prediction",
-                desc: "The NPK prediction service is modular — swap the simulated model for a trained Python ML API without touching the frontend.",
-              },
-              {
-                icon: FlaskConical,
-                title: "Recommendation Engine",
-                desc: "Configurable rules map nutrient conditions to fertilizers. Admins can edit thresholds, rules, and the fertilizer catalog.",
-              },
-              {
-                icon: Brain,
-                title: "Grape AI",
-                desc: "An AI abstraction layer uses your actual scan data as context. The provider can be replaced without exposing API keys.",
-              },
-              {
-                icon: Shield,
-                title: "Security & Audit",
-                desc: "Row-level security, role-based access, activity logging, and server-side validation protect every data boundary.",
-              },
-            ].map((item) => {
-              const Icon = item.icon;
-
-              return (
-                <div
-                  key={item.title}
-                  className="rounded-xl border border-[#E0E2DE] bg-white p-6 transition-all hover:border-[#BFD4C5] hover:shadow-md"
-                >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#EEF5F0] text-[#1F6B49]">
-                    <Icon className="h-6 w-6" />
-                  </div>
-
-                  <h3 className="mt-4 font-semibold">
-                    {item.title}
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-relaxed text-[#6B746E]">
-                    {item.desc}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ================= GRAPE AI ================= */}
-      <section className="bg-[#EEF5F0]/60 py-24">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 lg:grid-cols-2">
-            <div className="order-2 lg:order-1">
-              <span className="mb-4 inline-flex rounded-full border border-[#C9D5CC] px-3 py-1.5 text-xs font-semibold text-[#5B665F]">
-                How AI Helps
-              </span>
-
-              <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">
-                Grape AI: your agronomist in your pocket
-              </h2>
-
-              <p className="mt-4 leading-relaxed text-[#6B746E]">
-                Ask questions in plain language. Grape AI uses your actual
-                scan data, NPK results, and scan history to give you meaningful
-                explanations — never invented data.
-              </p>
-
-              <div className="mt-8 space-y-3">
-                {[
-                  "Why is nitrogen low?",
-                  "Explain my result.",
-                  "What does this mean for my grape crop?",
-                  "Compare this scan with my previous scan.",
-                  "Why are you recommending this fertilizer?",
-                  "Is my plant improving compared with the previous scan?",
-                ].map((question) => (
-                  <div
-                    key={question}
-                    className="flex items-center gap-3 rounded-lg border border-[#E0E2DE] bg-white px-4 py-3"
-                  >
-                    <Brain className="h-4 w-4 shrink-0 text-[#1F6B49]" />
-
-                    <span className="text-sm text-[#6B746E]">
-                      {question}
-                    </span>
+                    {index < 4 && (
+                      <div className="ml-7 h-4 border-l border-dashed border-[#9BB9A6]" />
+                    )}
                   </div>
                 ))}
-              </div>
-            </div>
 
-            <div className="order-1 lg:order-2">
-              <img
-                src={LAB_IMAGE}
-                alt="Scientific analysis"
-                className="rounded-2xl shadow-xl"
-              />
+              </div>
+
             </div>
           </div>
+
         </div>
       </section>
 
-      {/* ================= FAQ ================= */}
-      <section id="faq" className="py-24">
-        <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <span className="mb-4 inline-flex rounded-full border border-[#D8DDD8] px-3 py-1.5 text-xs font-semibold text-[#5B665F]">
-              FAQ
-            </span>
+      {/* HOW IT WORKS */}
+      <section
+        id="how-it-works"
+        className="border-y border-[#E0E2DE] bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      >
+        <div className="mx-auto max-w-7xl">
 
-            <h2 className="font-serif text-3xl font-bold tracking-tight sm:text-4xl">
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold text-[#1F6B49]">
+              How It Works
+            </p>
+
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+              Eight steps from grape petiole to recommendation.
+            </h2>
+
+            <p className="mt-4 text-gray-600">
+              The platform connects sensing, processing and explanation into
+              one understandable workflow.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step) => (
+              <div
+                key={step.number}
+                className="rounded-2xl border border-[#E0E2DE] bg-[#FBFAF7] p-5"
+              >
+                <div className="text-sm font-bold text-[#1F6B49]">
+                  {step.number}
+                </div>
+
+                <h3 className="mt-4 font-semibold">
+                  {step.title}
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-gray-600">
+                  {step.text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* WHY */}
+      <section
+        id="why"
+        className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      >
+        <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-2 lg:items-center">
+
+          <div className="rounded-3xl bg-[#1F6B49] p-7 text-white sm:p-10">
+            <p className="text-sm font-semibold text-green-100">
+              Why GrapeNPK
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
+              Built for the field, not just the screen.
+            </h2>
+
+            <p className="mt-5 leading-7 text-green-50">
+              Farmers need information that is simple enough to act on while
+              the system underneath can still be technically sophisticated.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2">
+            {[
+              {
+                title: "Rapid field screening",
+                text: "Designed to shorten the path from sample to understandable result.",
+              },
+              {
+                title: "Explainable AI",
+                text: "The system should explain why a result or recommendation was produced.",
+              },
+              {
+                title: "Mobile-first",
+                text: "The most important interactions are designed around smartphone use.",
+              },
+              {
+                title: "Real device integration",
+                text: "The architecture leaves room for ESP32 and sensor integration.",
+              },
+            ].map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-[#E0E2DE] bg-white p-5 shadow-sm"
+              >
+                <h3 className="font-semibold">{item.title}</h3>
+
+                <p className="mt-2 text-sm leading-6 text-gray-600">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* TECHNOLOGY */}
+      <section
+        id="technology"
+        className="border-y border-[#E0E2DE] bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      >
+        <div className="mx-auto max-w-7xl">
+
+          <div className="max-w-2xl">
+            <p className="text-sm font-semibold text-[#1F6B49]">
+              Technology
+            </p>
+
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
+              A modular architecture ready to grow.
+            </h2>
+          </div>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              "IoT Layer",
+              "Spectral Pipeline",
+              "Nutrient Prediction",
+              "Recommendation Engine",
+              "Grape AI",
+              "Security & Audit",
+            ].map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-[#E0E2DE] bg-[#FBFAF7] p-6"
+              >
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#EEF5F0] font-bold text-[#1F6B49]">
+                  ✦
+                </div>
+
+                <h3 className="mt-5 font-semibold">
+                  {item}
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-gray-600">
+                  Designed as a separate layer so hardware, analysis and
+                  user experience can evolve independently.
+                </p>
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
+      {/* AI */}
+      <section className="px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-5xl rounded-3xl bg-[#EEF5F0] p-7 sm:p-10 lg:p-14">
+
+          <p className="text-sm font-semibold text-[#1F6B49]">
+            Grape AI
+          </p>
+
+          <h2 className="mt-3 text-3xl font-bold sm:text-4xl">
+            Your grape nutrition assistant.
+          </h2>
+
+          <p className="mt-4 max-w-3xl leading-7 text-gray-600">
+            The goal is not simply to show numbers. The system should help a
+            farmer understand what the result means, what may need attention,
+            and what should be checked next.
+          </p>
+
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <Show when="signed-in">
+              <Link
+                href="/ai"
+                className="flex min-h-12 items-center justify-center rounded-xl bg-[#1F6B49] px-6 font-semibold text-white"
+              >
+                Open Grape AI
+              </Link>
+            </Show>
+
+            <Show when="signed-out">
+              <SignUpButton mode="modal">
+                <button className="min-h-12 rounded-xl bg-[#1F6B49] px-6 font-semibold text-white">
+                  Get Started
+                </button>
+              </SignUpButton>
+            </Show>
+          </div>
+
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section
+        id="faq"
+        className="border-t border-[#E0E2DE] bg-white px-4 py-16 sm:px-6 sm:py-20 lg:px-8"
+      >
+        <div className="mx-auto max-w-4xl">
+
+          <div className="text-center">
+            <p className="text-sm font-semibold text-[#1F6B49]">
+              FAQ
+            </p>
+
+            <h2 className="mt-2 text-3xl font-bold sm:text-4xl">
               Frequently asked questions
             </h2>
           </div>
 
-          <div className="mt-12 space-y-3">
-            {FAQ_ITEMS.map((item) => (
+          <div className="mt-10 space-y-3">
+            {faqs.map((faq) => (
               <details
-                key={item.question}
-                className="group rounded-xl border border-[#E0E2DE] bg-white"
+                key={faq.question}
+                className="group rounded-2xl border border-[#E0E2DE] bg-[#FBFAF7] px-5 py-4"
               >
-                <summary className="flex cursor-pointer list-none items-center justify-between px-5 py-5 text-left text-base font-medium">
-                  {item.question}
+                <summary className="cursor-pointer list-none font-semibold">
+                  <div className="flex items-center justify-between gap-4">
+                    <span>{faq.question}</span>
 
-                  <ChevronDown className="h-5 w-5 shrink-0 text-[#7B837E] transition-transform group-open:rotate-180" />
+                    <span className="text-xl text-[#1F6B49]">
+                      +
+                    </span>
+                  </div>
                 </summary>
 
-                <div className="border-t border-[#E0E2DE] px-5 py-5 text-sm leading-relaxed text-[#6B746E]">
-                  {item.answer}
-                </div>
+                <p className="mt-3 pr-6 text-sm leading-6 text-gray-600">
+                  {faq.answer}
+                </p>
               </details>
             ))}
           </div>
+
         </div>
       </section>
 
-      {/* ================= CTA ================= */}
-      <section className="py-24">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="relative overflow-hidden rounded-3xl bg-[#1F6B49] px-8 py-16 text-center sm:px-16">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1F6B49]/90 to-[#1A5B3E]" />
+      {/* CTA */}
+      <section className="px-4 py-16 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl rounded-3xl bg-[#1F6B49] px-6 py-10 text-white sm:px-10 sm:py-14">
 
-            <div className="relative">
-              <Grape className="mx-auto h-12 w-12 text-white/80" />
+          <h2 className="max-w-2xl text-3xl font-bold sm:text-4xl">
+            Ready to explore grape nutrition intelligence?
+          </h2>
 
-              <h2 className="mt-6 font-serif text-3xl font-bold text-white sm:text-4xl">
-                Start scanning your vineyard today
-              </h2>
+          <p className="mt-4 max-w-2xl text-green-50">
+            Start with the dashboard, connect the device and move toward a
+            complete field analysis workflow.
+          </p>
 
-              <p className="mt-4 text-white/80">
-                Create an account, connect your ESP32 device, and get your
-                first NPK analysis in minutes.
-              </p>
+          <div className="mt-7">
+            <Show when="signed-in">
+              <Link
+                href="/dashboard"
+                className="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 font-semibold text-[#1F6B49]"
+              >
+                Go to Dashboard
+              </Link>
+            </Show>
 
-              <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-                <Link
-                  href="/dashboard"
-                  className="inline-flex items-center justify-center rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-[#1F6B49] transition hover:bg-[#F3F6F3]"
-                >
-                  Get Started
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-
-                <Link
-                  href="/sign-in"
-                  className="inline-flex items-center justify-center rounded-xl px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-white/10"
-                >
-                  Sign In
-                </Link>
-              </div>
-            </div>
+            <Show when="signed-out">
+              <SignUpButton mode="modal">
+                <button className="min-h-12 rounded-xl bg-white px-6 font-semibold text-[#1F6B49]">
+                  Create Farmer Account
+                </button>
+              </SignUpButton>
+            </Show>
           </div>
+
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
-      <footer className="border-t border-[#E0E2DE] py-12">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-6 md:flex-row">
-            <div className="flex items-center gap-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1F6B49]">
-                <Grape className="h-4 w-4 text-white" />
-              </div>
+      <footer className="border-t border-[#E0E2DE] bg-white px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 text-sm text-gray-500 sm:flex-row sm:items-center sm:justify-between">
 
-              <span className="font-serif text-lg font-bold">
-                GrapeNPK
-              </span>
-            </div>
-
-            <p className="text-center text-sm text-[#6B746E]">
-              AI-enabled grape petiole analysis & precision fertilizer
-              recommendation.
-            </p>
-
-            <p className="text-xs text-[#8A938D]">
-              Model-based estimates. Not laboratory-verified results.
-            </p>
+          <div className="font-semibold text-[#1F6B49]">
+            GrapeNPK
           </div>
+
+          <div>
+            AI-enabled grape petiole analysis prototype.
+          </div>
+
         </div>
       </footer>
+
     </main>
   );
 }
